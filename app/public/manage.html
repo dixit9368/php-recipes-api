@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Recipes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            color: #d9534f;
+            font-size: 16px;
+        }
+        .form-container {
+            margin-bottom: 20px;
+        }
+        .form-container input, .form-container button {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Recipes</h1>
+
+        <!-- Search Form -->
+        <div class="form-container">
+            <input type="text" id="search" placeholder="Search recipes">
+            <button onclick="searchRecipes()">Search</button>
+        </div>
+
+        <!-- Add/Edit Recipe Form -->
+        <div class="form-container">
+            <h2 id="form-title">Add Recipe</h2>
+            <form id="recipe-form">
+                <input type="hidden" id="recipe-id">
+                <label for="name">Recipe Name</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="prep_time">Preparation Time (minutes)</label>
+                <input type="number" id="prep_time" name="prep_time" required>
+
+                <label for="difficulty">Difficulty (1-3)</label>
+                <input type="number" id="difficulty" name="difficulty" min="1" max="3" required>
+
+                <label for="vegetarian">Vegetarian</label>
+                <input type="checkbox" id="vegetarian" name="vegetarian">
+
+                <button type="submit">Save Recipe</button>
+                <div id="response-message" class="message"></div>
+            </form>
+        </div>
+
+        <!-- Recipes Table -->
+        <table id="recipes-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Preparation Time</th>
+                    <th>Difficulty</th>
+                    <th>Vegetarian</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Recipes will be inserted here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const apiUrl = 'http://localhost:8080/recipes';
+
+        // Fetch and display recipes
+        function fetchRecipes(query = '') {
+            fetch(`${apiUrl}?search=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.querySelector('#recipes-table tbody');
+                    tbody.innerHTML = '';
+                    data.forEach(recipe => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${recipe.name}</td>
+                                <td>${recipe.prep_time}</td>
+                                <td>${recipe.difficulty}</td>
+                                <td>${recipe.vegetarian ? 'Yes' : 'No'}</td>
+                                <td>
+                                    <button onclick="editRecipe(${recipe.id})">Edit</button>
+                                    <button onclick="deleteRecipe(${recipe.id})">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                });
+        }
+
+        // Search recipes
+        function searchRecipes() {
+            const query = document.getElementById('search').value;
+            fetchRecipes(query);
+        }
+
+        // Edit recipe
+        function editRecipe(id) {
+            fetch(`${apiUrl}/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('form-title').textContent = 'Edit Recipe';
+                    document.getElementById('recipe-id').value = data.id;
+                    document.getElementById('name').value = data.name;
+                    document.getElementById('prep_time').value = data.prep_time;
+                    document.getElementById('difficulty').value = data.difficulty;
+                    document.getElementById('vegetarian').checked = data.vegetarian;
+                });
+        }
+
+        // Delete recipe
+        function deleteRecipe(id) {
+            fetch(`${apiUrl}/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response-message').textContent = 'Recipe deleted successfully!';
+                fetchRecipes(); // Refresh recipes table
+            })
+            .catch(error => {
+                document.getElementById('response-message').textContent = 'Error deleting recipe: ' + error.message;
+            });
+        }
+
+        // Save recipe (Add/Edit)
+        document.getElementById('recipe-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            const data = {
+                name: formData.get('name'),
+                prep_time: formData.get('prep_time'),
+                difficulty: formData.get('difficulty'),
+                vegetarian: formData.get('vegetarian') === 'on'
+            };
+
+            const id = document.getElementById('recipe-id').value;
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${apiUrl}/${id}` : apiUrl;
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response-message').textContent = `Recipe ${id ? 'updated' : 'added'} successfully!`;
+                document.getElementById('recipe-form').reset();
+                document.getElementById('form-title').textContent = 'Add Recipe';
+                fetchRecipes(); // Refresh recipes table
+            })
+            .catch(error => {
+                document.getElementById('response-message').textContent = 'Error saving recipe: ' + error.message;
+            });
+        });
+
+        // Initial fetch
+        fetchRecipes();
+    </script>
+</body>
+</html>

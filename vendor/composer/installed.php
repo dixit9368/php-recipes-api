@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'sanketpatel/php-recipes-api',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => '468c8008bb896396cdceb1ab963687b369feb48a',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -242,9 +242,9 @@
             'dev_requirement' => false,
         ),
         'sanketpatel/php-recipes-api' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '468c8008bb896396cdceb1ab963687b369feb48a',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

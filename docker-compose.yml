@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.8'
 
 services:
   php:
@@ -9,18 +9,19 @@ services:
     ports:
       - "9000:9000"
     networks:
-      - mynetwork
+      - php-recipes-api_mynetwork
 
   nginx:
-    image: nginx:alpine
+    image: nginx:latest
     container_name: nginx
     ports:
-       - "8080:80"
+      - "8080:80"
     volumes:
-      - ./app:/var/www/html
       - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+      - ./app/public:/var/www/html/public
     networks:
-      - mynetwork
+      - php-recipes-api_mynetwork
 
   postgres:
     image: postgres:alpine
@@ -32,7 +33,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - mynetwork
+      - php-recipes-api_mynetwork
 
   redis:
     image: redis:alpine
@@ -40,7 +41,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - mynetwork
+      - php-recipes-api_mynetwork
 
   mongodb:
     image: mongo:latest
@@ -48,8 +49,8 @@ services:
     ports:
       - "27017:27017"
     networks:
-      - mynetwork
+      - php-recipes-api_mynetwork
 
 networks:
-  mynetwork:
+  php-recipes-api_mynetwork:
     driver: bridge
